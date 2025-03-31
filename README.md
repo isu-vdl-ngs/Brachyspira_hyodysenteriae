@@ -107,6 +107,7 @@ run_fastbaps \
   -o snp-filtered_core_gene_alignment.aln.snp_sites.aln.baps \
   -p baps \
   -t 8
+  
 #💡 Notes:
 The input was the SNP alignment generated from snp-sites, and the midpoint-rooted tree obtained using Newick Utilities.
 The baps option was used to enable hierarchical Bayesian clustering directly on the phylogeny.
