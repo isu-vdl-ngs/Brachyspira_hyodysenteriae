@@ -120,3 +120,51 @@ run_fastbaps \
 The input was the SNP alignment generated from snp-sites, and the midpoint-rooted tree obtained using Newick Utilities.
 The baps option was used to enable hierarchical Bayesian clustering directly on the phylogeny.
 This SNP-based approach was selected to provide high-resolution strain differentiation and to account for potential overrepresentation of closely related isolates, particularly those from the same BioProject in NCBI.
+
+🧬 EggNOG-mapper (Functional Annotation of the Pan-genome)
+EggNOG-mapper v2.1.12 was used to functionally annotate the protein sequences from the pan-genome reference produced by Panaroo.
+emapper.py \
+  -i pan_genome_reference_proteins.fasta \
+  --data_dir /path/to/eggnog_database \
+  --output eggnog_output \
+  --cpu 48 \
+  --override
+
+#💡 Notes:
+Protein sequences were derived from the pan_genome_reference.fa file output by Panaroo.
+Prior to annotation, nucleotide sequences were translated into protein sequences while preserving gene IDs using a custom Biopython script (not included here).
+Functional annotation was performed using the COG (Clusters of Orthologous Groups) database.
+EggNOG database files were downloaded and stored locally. 
+
+🧪 ABRicate (Detection of AMR and Virulence Genes)
+ABRicate v1.0.1 was used to screen Brachyspira hyodysenteriae genomes for antimicrobial resistance (AMR) and virulence genes.
+
+🔍 AMR Gene Detection:
+Genomes were screened against multiple public databases including:
+-ResFinder
+-CARD
+-MEGARes
+-ARG-ANNOT
+-NCBI
+
+Thresholds applied:
+--mincov 80 (minimum coverage ≥80%)
+--minid 80 (minimum identity ≥80%)
+
+Commands: 
+abricate --db resfinder sample.fasta > sample_resfinder.tab
+abricate --summary sample_resfinder.tab > sample_resfinder_summary.tab
+
+🧬 Virulence Gene Detection:
+Genomes were screened using:
+-VirulenceFinder
+-Custom B. hyodysenteriae virulence gene database (containing 19 genes related to hemolysis, iron uptake, and known virulence-associated loci)
+
+Command: 
+abricate --db bhy_virulence *.fasta > Total_abricate_bhy_vf.tab
+abricate --summary Total_abricate_bhy_vf.tab > Total_bhy_vf_summary.tab
+
+#💡 Note:
+-The custom virulence gene database was curated from literature and manually formatted according to ABRicate requirements.
+-All genomes were processed in batch using SLURM scripts.
+-Output included percentage coverage and nucleotide identity for each detected gene.
