@@ -1,28 +1,44 @@
-#Brachyspira hyodysenteriae bioinformatic workflow
+# Brachyspira hyodysenteriae bioinformatic workflow
 
 This repository contains the bioinformatics workflow and custom scripts used in the study:  
 **"Genomic insights into the population structure, antimicrobial resistance, and virulence of Brachyspira hyodysenteriae from diverse geographical regions."**
 
 ## Project Overview 
--Organism: Brachyspira hyodysenteriae 
+- Organism: Brachyspira hyodysenteriae 
 - Number of genomes analyzed: 251
-- Bioinformatic tools used: FastQC (v0.11.9), MultiQC (v1.12), Trimmomatic (V0.39), SPAdes (V3.15.5), Prokka (v1.14.6), Panaroo (v1.3.4), SNP-sites (v2.5.1), IQ-TREE (v2.1.4), Newick Utilities (v1.6), Fastbaps (v1.0.8), and eggnog-mapper (v2.1.12)
+- Bioinformatic tools used:
+  - FastQC (v0.11.9),
+  - MultiQC (v1.12),
+  - Trimmomatic (V0.39),
+  - SPAdes (V3.15.5),
+  - Prokka (v1.14.6),
+  - Panaroo (v1.3.4),
+  - SNP-sites (v2.5.1),
+  - IQ-TREE (v2.1.4),
+  - Newick Utilities (v1.6),
+  - Fastbaps (v1.0.8), and
+  - Eggnog-mapper (v2.1.12)
 
-Genomic data have been deposited to GenBank under Bioproject accession (GenBank accession no. PRJNA1228138). 
+Genomic data have been deposited to GenBank under Bioproject accession (GenBank accession no. **PRJNA1228138**). 
 
-FastQC (Quality Control of Raw Reads)
-FastQC v0.11.9 was used to assess the quality of raw paired-end reads.
-Usage: `fastqc *.fastq.gz`
-# This was run in a loop across all FASTQ files within a high-performance computing environment.
+
+## This was run in a loop across all FASTQ files within a high-performance computing environment.
+
+📊 FastQC (Quality Control of Raw Reads)
+<br />FastQC v0.11.9 was used to assess the quality of raw paired-end reads.
+<br />Usage:
+`fastqc *.fastq.gz`
+
 
 📊 MultiQC (Aggregated Quality Reports)
-MultiQC v1.12 was used to summarize FastQC reports.
-Usage: `multiqc .`
+<br />MultiQC v1.12 was used to summarize FastQC reports.
+<br />Usage:
+`multiqc .`
 
-#💡Notes: MultiQC was run in the directory containing the FastQC output files.
+#💡Note: MultiQC was run in the directory containing the FastQC output files.
 
 Trimmomatic Parameters Used
-Paired-end reads were trimmed using Trimmomatic v0.39 with the following options:
+<br />Paired-end reads were trimmed using Trimmomatic v0.39 with the following options:
 ```
 trimmomatic PE -threads 8 input_R1.fastq.gz input_R2.fastq.gz \
   trimmed_R1.fastq.gz R1_unpaired.fastq.gz \
@@ -31,11 +47,11 @@ trimmomatic PE -threads 8 input_R1.fastq.gz input_R2.fastq.gz \
   LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:36
 ```
   
-#NOTE: 💡 We used `NexteraPE-PE.fa` for adapter trimming. Adapter sequences may vary depending on the library preparation method — users should confirm which adapter file is appropriate for their dataset.
+#💡NOTE: We used `NexteraPE-PE.fa` for adapter trimming. Adapter sequences may vary depending on the library preparation method — users should confirm which adapter file is appropriate for their dataset.
 
 🧬 SPAdes (Genome Assembly)
-SPAdes v3.15.5 was used for de novo genome assembly of paired-end reads.
-Usage:
+<br />SPAdes v3.15.5 was used for de novo genome assembly of paired-end reads.
+<br />Usage:
 ```
 spades.py --careful \
   -1 trimmed_R1.fastq.gz \
@@ -43,21 +59,24 @@ spades.py --careful \
   -o sampleID_spades_output
 ```
   
-#Note: 💡 Assemblies were generated using the --careful option to reduce mismatches and short indels. Assemblies were run individually for each sample using a loop over paired-end read files.
+#💡NOTE: Assemblies were generated using the --careful option to reduce mismatches and short indels. Assemblies were run individually for each sample using a loop over paired-end read files.
 Output directories were named per sample and collected in a folder called Spade-done/.
 <details> <summary>🔁 Sample SLURM batch script used for SPAdes loop</summary>
-for f1 in *_R1_001.fastq.gz; do
+<pre>
+  <code>
+  for f1 in *_R1_001.fastq.gz; do
     base=${f1%_R1_001.fastq.gz}
     f2=${base}_R2_001.fastq.gz
-
     spades.py --careful -1 ${f1} -2 ${f2} -o ${base}_spades_output
     cp -r ${base}_spades_output Spade-done/
-done
+  done
+  </code>
+</pre>
 </details>
 
 🧬 Prokka (Genome Annotation)
-Prokka v1.14.6 was used to annotate the genomic assemblies of all 251 Brachyspira hyodysenteriae genomes.
-Usage:
+<br />Prokka v1.14.6 was used to annotate the genomic assemblies of all 251 Brachyspira hyodysenteriae genomes.
+<br />Usage:
 ```
 prokka --outdir sample_output_dir \
   --force \
@@ -70,8 +89,8 @@ prokka --outdir sample_output_dir \
 #💡 Note: All genomes were annotated in a loop using the above parameters. Genus was specified as Brachyspira and default bacterial settings were used.
 
 🧬 Panaroo (Pangenome Analysis)
-Panaroo v1.3.4 was used to perform pangenome analysis and generate a core gene alignment from annotated genomes
-Usage:
+<br />Panaroo v1.3.4 was used to perform pangenome analysis and generate a core gene alignment from annotated genomes
+<br />Usage:
 ```
 panaroo -i ./annotated_assemblies_gff_files/*.gff \
   -o ./panaroo_output/ \
@@ -83,12 +102,12 @@ panaroo -i ./annotated_assemblies_gff_files/*.gff \
 ```
   
 #💡 Note:
-The input files (*.gff) were generated from Prokka annotations.
-We used --clean-mode strict to reduce spurious gene predictions.
-MAFFT was used as the aligner, and a 95% presence threshold (`--core_threshold 0.95`) defined the core genome
+- The input files (*.gff) were generated from Prokka annotations.
+- We used --clean-mode strict to reduce spurious gene predictions.
+- MAFFT was used as the aligner, and a 95% presence threshold (`--core_threshold 0.95`) defined the core genome
 
 🧬 SNP-sites (SNP Extraction from Core Genome Alignment)
-SNP-sites v2.5.1 was used to extract single nucleotide polymorphisms (SNPs) from the core gene alignment produced by Panaroo.
+<br />SNP-sites v2.5.1 was used to extract single nucleotide polymorphisms (SNPs) from the core gene alignment produced by Panaroo.
 command:
 ```
 snp-sites -mvph -o snp-filtered_core_gene_alignment.aln core_gene_alignment.aln
@@ -96,37 +115,38 @@ snp-sites -mvph -o snp-filtered_core_gene_alignment.aln core_gene_alignment.aln
 
 #💡 Note:
 core_gene_alignment.aln was the core genome alignment generated by Panaroo.
-The flags -mvph were used to:
--m: output in multi-FASTA format
--v: produce variant sites only
--p: output in PHYLIP format (used in downstream tools)
--h: add a header line
+<br />The flags -mvph were used to:
+- m: output in multi-FASTA format
+- v: produce variant sites only
+- p: output in PHYLIP format (used in downstream tools)
+- h: add a header line
+
 The resulting alignment (snp-filtered_core_gene_alignment.aln) was used for downstream phylogenetic inference with IQ-TREE.
 
 🌳 IQ-TREE (Phylogenetic Tree Construction)
-IQ-TREE v2.1.4 was used to construct a maximum likelihood phylogenetic tree based on SNPs from the core genome alignment.
+<br />IQ-TREE v2.1.4 was used to construct a maximum likelihood phylogenetic tree based on SNPs from the core genome alignment.
 
 bash:
 ```bash
 iqtree -s snp-filtered_core_gene_alignment.aln.snp_sites.aln -m MFP -nt AUTO
 ```
 
-#💡 Notes:
-The input file snp-filtered_core_gene_alignment.aln.snp_sites.aln was generated by SNP-sites.
-The -m MFP option invokes ModelFinder Plus, which automatically selects the best-fit substitution model.
+#💡 Note:
+- The input file snp-filtered_core_gene_alignment.aln.snp_sites.aln was generated by SNP-sites.
+- The `-m` MFP option invokes ModelFinder Plus, which automatically selects the best-fit substitution model.
 
 🧩 Newick Utilities (Midpoint Rooting)
-Newick Utilities v1.6 was used to midpoint root the phylogenetic tree generated by IQ-TREE.
+<br />Newick Utilities v1.6 was used to midpoint root the phylogenetic tree generated by IQ-TREE.
 ```
 nw_reroot snp-filtered_core_gene_alignment.aln.snp_sites.aln.treefile > rooted_tree.nwk
 ```
 
-#💡 Notes:
-nw_reroot was used to apply midpoint rooting to the tree.
-The resulting output file (rooted_tree.nwk) was used for downstream lineage classification and tree annotation.
+#💡 Note:
+- nw_reroot was used to apply midpoint rooting to the tree.
+- The resulting output file (rooted_tree.nwk) was used for downstream lineage classification and tree annotation.
 
 🧬 FastBAPS (Lineage Classification)
-FastBAPS v1.0.8 was used for Bayesian hierarchical clustering of the SNP alignment to infer population structure.
+<br />FastBAPS v1.0.8 was used for Bayesian hierarchical clustering of the SNP alignment to infer population structure.
 ```
 run_fastbaps \
   -i snp-filtered_core_gene_alignment.aln.snp_sites.aln \
@@ -136,13 +156,13 @@ run_fastbaps \
   -t 8
 ```
   
-#💡 Notes:
-The input was the SNP alignment generated from snp-sites, and the midpoint-rooted tree obtained using Newick Utilities.
-The baps option was used to enable hierarchical Bayesian clustering directly on the phylogeny.
-This SNP-based approach was selected to provide high-resolution strain differentiation and to account for potential overrepresentation of closely related isolates, particularly those from the same BioProject in NCBI.
+#💡 Note:
+- The input was the SNP alignment generated from snp-sites, and the midpoint-rooted tree obtained using Newick Utilities.
+- The baps option was used to enable hierarchical Bayesian clustering directly on the phylogeny.
+- This SNP-based approach was selected to provide high-resolution strain differentiation and to account for potential overrepresentation of closely related isolates, particularly those from the same BioProject in NCBI.
 
 🧬 EggNOG-mapper (Functional Annotation of the Pan-genome)
-EggNOG-mapper v2.1.12 was used to functionally annotate the protein sequences from the pan-genome reference produced by Panaroo.
+<br />EggNOG-mapper v2.1.12 was used to functionally annotate the protein sequences from the pan-genome reference produced by Panaroo.
 ```
 emapper.py \
   -i pan_genome_reference_proteins.fasta \
@@ -152,26 +172,26 @@ emapper.py \
   --override
 ```
 
-#💡 Notes:
-Protein sequences were derived from the pan_genome_reference.fa file output by Panaroo.
-Prior to annotation, nucleotide sequences were translated into protein sequences while preserving gene IDs using a custom Biopython script (not included here).
-Functional annotation was performed using the COG (Clusters of Orthologous Groups) database.
-EggNOG database files were downloaded and stored locally. 
+#💡 Note:
+- Protein sequences were derived from the pan_genome_reference.fa file output by Panaroo.
+- Prior to annotation, nucleotide sequences were translated into protein sequences while preserving gene IDs using a custom Biopython script (not included here).
+- Functional annotation was performed using the COG (Clusters of Orthologous Groups) database.
+- EggNOG database files were downloaded and stored locally. 
 
 🧪 ABRicate (Detection of AMR and Virulence Genes)
-ABRicate v1.0.1 was used to screen Brachyspira hyodysenteriae genomes for antimicrobial resistance (AMR) and virulence genes.
+<br />ABRicate v1.0.1 was used to screen Brachyspira hyodysenteriae genomes for antimicrobial resistance (AMR) and virulence genes.
 
 🔍 AMR Gene Detection:
-Genomes were screened against multiple public databases including:
--ResFinder
--CARD
--MEGARes
--ARG-ANNOT
--NCBI
+<br />Genomes were screened against multiple public databases including:
+- ResFinder
+- CARD
+- MEGARes
+- ARG-ANNOT
+- NCBI
 
 Thresholds applied:
---mincov 80 (minimum coverage ≥80%)
---minid 80 (minimum identity ≥80%)
+<br />--mincov 80 (minimum coverage ≥80%)
+<br />--minid 80 (minimum identity ≥80%)
 
 Commands:
 ```
@@ -180,9 +200,9 @@ abricate --summary sample_resfinder.tab > sample_resfinder_summary.tab
 ```
 
 🧬 Virulence Gene Detection:
-Genomes were screened using:
--VirulenceFinder
--Custom B. hyodysenteriae virulence gene database (containing 19 genes related to hemolysis, iron uptake, and known virulence-associated loci)
+<br />Genomes were screened using:
+- VirulenceFinder
+- Custom B. hyodysenteriae virulence gene database (containing 19 genes related to hemolysis, iron uptake, and known virulence-associated loci)
 
 Command:
 ```
@@ -191,6 +211,6 @@ abricate --summary Total_abricate_bhy_vf.tab > Total_bhy_vf_summary.tab
 ```
 
 #💡 Note:
--The custom virulence gene database was curated from literature and manually formatted according to ABRicate requirements.
--All genomes were processed in batch using SLURM scripts.
--Output included percentage coverage and nucleotide identity for each detected gene.
+- The custom virulence gene database was curated from literature and manually formatted according to ABRicate requirements.
+- All genomes were processed in batch using SLURM scripts.
+- Output included percentage coverage and nucleotide identity for each detected gene.
