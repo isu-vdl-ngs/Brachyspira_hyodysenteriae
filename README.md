@@ -20,6 +20,7 @@ This repository contains the bioinformatics workflow and custom scripts used in 
   - Eggnog-mapper (v2.1.12)
 
 Genomic data have been deposited to GenBank under Bioproject accession (GenBank accession no. **PRJNA1228138**). 
+<br />Biosample accession for ISU VDL isolates: SAMN47007206-SAMN47007322
 
 
 ## This was run in a loop across all FASTQ files within a high-performance computing environment.
