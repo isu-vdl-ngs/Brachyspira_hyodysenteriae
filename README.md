@@ -3,6 +3,8 @@
 This repository contains the bioinformatics workflow and custom scripts used in the study:  
 **"Genomic insights into the population structure, antimicrobial resistance, and virulence of Brachyspira hyodysenteriae from diverse geographical regions."**
 
+https://doi.org/10.1128/spectrum.03386-24
+
 ## Project Overview 
 - Organism: Brachyspira hyodysenteriae 
 - Number of genomes analyzed: 251
