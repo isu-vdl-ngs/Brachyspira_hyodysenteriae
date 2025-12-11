@@ -1,6 +1,6 @@
 # Brachyspira hyodysenteriae bioinformatic workflow
 
-This repository contains the bioinformatics workflow and custom scripts used in the study:  
+This repository contains the bioinformatics workflow (tools) and custom scripts used in the study:  
 **"Genomic insights into the population structure, antimicrobial resistance, and virulence of Brachyspira hyodysenteriae from diverse geographical regions."**
 
 https://doi.org/10.1128/spectrum.03386-24
